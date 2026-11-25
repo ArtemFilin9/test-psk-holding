@@ -7,12 +7,16 @@ if (-not (Get-Command node.exe -ErrorAction SilentlyContinue)) {
         $env:Path = $localNode + ';' + $env:Path
     }
 }
-if (-not (Get-Command node -ErrorAction SilentlyContinue)) { throw 'Установите Node.js 24 LTS, затем повторите запуск.' }
-if (Get-Command pnpm.cmd -ErrorAction SilentlyContinue) {
-    & pnpm.cmd install --frozen-lockfile
+if (-not (Get-Command node.exe -ErrorAction SilentlyContinue)) { throw 'Установите Node.js 24 LTS с npm и повторите запуск.' }
+$major = & node.exe -p 'parseInt(process.versions.node)'
+if ($LASTEXITCODE -ne 0 -or [int]$major -lt 24) { throw 'Для запуска нужен Node.js версии 24 или новее.' }
+$pnpmVersion = '11.25.0'
+$pnpm = Get-Command pnpm.cmd -ErrorAction SilentlyContinue
+if ($pnpm -and ((& pnpm.cmd --version) -eq $pnpmVersion)) {
+    & pnpm.cmd install --frozen-lockfile --prod=false
 } elseif (Get-Command npx.cmd -ErrorAction SilentlyContinue) {
-    & npx.cmd --yes pnpm@11.25.0 install --frozen-lockfile
-} else { throw 'Требуется pnpm или npm из поставки Node.js.' }
+    & npx.cmd --yes "pnpm@$pnpmVersion" install --frozen-lockfile --prod=false
+} else { throw 'Установите npm вместе с Node.js и повторите запуск.' }
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 try {
     if (-not $env:PSK_LOGIN -or -not $env:PSK_PASSWORD) {

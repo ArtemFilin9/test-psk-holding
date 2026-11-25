@@ -5,6 +5,8 @@ import { BaseElement } from './base-element.js';
 export class LoginPage extends BasePage {
   constructor(page) {
     super(page);
+    this.cabinet = page.locator('#content:has(.personal_wrapper)');
+    this.privateFields = page.locator('.auth_wr_inner, a.personal-link');
     this.form = page.locator('#auth-page-form:visible');
     this.login = this.form.locator('[name="USER_LOGIN"]');
     this.password = this.form.locator('[name="USER_PASSWORD"]');
